@@ -15,12 +15,16 @@ def MetadataObjectForURL(url):
 	summary = xml.xpath('./abstract')[0].text
 	thumb = xml.xpath('./thumbnailUrl')[0].text.replace('_92x69.jpg', '_480x360.jpg')
 	duration = Datetime.MillisecondsFromString(xml.xpath('./length')[0].text)
+	season_id = url.split('&season=')[1].split('&')[0]
+	episode_id = url.split('&idx=')[1]
 
 	return EpisodeObject(
 		show = show,
 		title = title,
 		summary = summary,
 		duration = duration,
+		season = int(season_id),
+		index = int(episode_id),
 		thumb = Resource.ContentsOfURLWithFallback(url=thumb)
 	)
 
@@ -46,7 +50,10 @@ def MediaObjectsForURL(url):
 def GetXML(url):
 
 	video_id = url.split('videoId=')[1].split('&')[0]
-	show_id = url.split('showId=')[1]
+	show_id = url.split('showId=')[1].split('&')[0]
+	p = show_id.find("&")
+	if p > -1:
+		show_id = show_id.split("&")[0]
 
 	# NB: must do it this way as the first line of their xml is a carriage return (which makes it invalid)
 	xml = HTTP.Request('http://www.diynetwork.com/diy/channel/xml/0,,%s,00.xml' % show_id).content.strip()
